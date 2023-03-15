@@ -1,0 +1,101 @@
+normalize:
+  use_normalize: false
+text_cleaner:
+  cleaner_types: tacotron
+token:
+  list:
+  - <blank>
+  - <unk>
+  - AH0
+  - T
+  - N
+  - D
+  - S
+  - R
+  - L
+  - IH1
+  - DH
+  - M
+  - K
+  - Z
+  - EH1
+  - AE1
+  - IH0
+  - AH1
+  - W
+  - ','
+  - HH
+  - ER0
+  - P
+  - IY1
+  - V
+  - F
+  - B
+  - UW1
+  - AA1
+  - AY1
+  - AO1
+  - .
+  - EY1
+  - IY0
+  - OW1
+  - NG
+  - G
+  - SH
+  - Y
+  - AW1
+  - CH
+  - ER1
+  - UH1
+  - TH
+  - JH
+  - ''''
+  - '?'
+  - OW0
+  - EH2
+  - '!'
+  - IH2
+  - OY1
+  - EY2
+  - AY2
+  - EH0
+  - UW0
+  - AA2
+  - AE2
+  - OW2
+  - AO2
+  - AE0
+  - AH2
+  - ZH
+  - AA0
+  - UW2
+  - IY2
+  - AY0
+  - AO0
+  - AW2
+  - EY0
+  - UH2
+  - ER2
+  - AW0
+  - '...'
+  - UH0
+  - OY2
+  - . . .
+  - OY0
+  - . . . .
+  - ..
+  - . ...
+  - . .
+  - . . . . .
+  - .. ..
+  - '... .'
+  - <sos/eos>
+tokenizer:
+  g2p_type: g2p_en_no_space
+  token_type: phn
+tts_model:
+  model_path: /nfs/stak/users/raffelm/hpc-share/capstone/testing/models/onnx/vits.onnx
+  model_type: VITS
+  quantized_model_path: /nfs/stak/users/raffelm/hpc-share/capstone/testing/models/quantize/vits.onnx
+vocoder:
+  vocoder_type: not_used
