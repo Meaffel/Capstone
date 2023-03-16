@@ -42,6 +42,7 @@ class KLDivergenceLoss(torch.nn.Module):
         kl = logs_p - logs_q - 0.5
         kl += 0.5 * ((z_p - m_p) ** 2) * torch.exp(-2.0 * logs_p)
         kl = torch.sum(kl * z_mask)
+        #Calculates kl divergence loss
         loss = kl / torch.sum(z_mask)
 
         return loss

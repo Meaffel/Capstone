@@ -188,6 +188,7 @@ class VITSGenerator(torch.nn.Module):
             use_macaron_style=use_macaron_style_in_text_encoder,
             use_conformer_conv=use_conformer_conv_in_text_encoder,
         )
+        #Instantiates HIFIGAN Generator
         self.decoder = HiFiGANGenerator(
             in_channels=hidden_channels,
             out_channels=1,
@@ -200,6 +201,7 @@ class VITSGenerator(torch.nn.Module):
             resblock_dilations=decoder_resblock_dilations,
             use_weight_norm=use_weight_norm_in_decoder,
         )
+        #Instantiates Posterior encoder Generator
         self.posterior_encoder = PosteriorEncoder(
             in_channels=aux_channels,
             out_channels=hidden_channels,
@@ -212,6 +214,7 @@ class VITSGenerator(torch.nn.Module):
             dropout_rate=posterior_encoder_dropout_rate,
             use_weight_norm=use_weight_norm_in_posterior_encoder,
         )
+        #Instantiates Residual coupling block
         self.flow = ResidualAffineCouplingBlock(
             in_channels=hidden_channels,
             hidden_channels=hidden_channels,
@@ -225,6 +228,7 @@ class VITSGenerator(torch.nn.Module):
             use_only_mean=use_only_mean_in_flow,
         )
         # TODO(kan-bayashi): Add deterministic version as an option
+        #Instantiates Stochastic Duration Predictor
         self.duration_predictor = StochasticDurationPredictor(
             channels=hidden_channels,
             kernel_size=stochastic_duration_predictor_kernel_size,
@@ -236,16 +240,19 @@ class VITSGenerator(torch.nn.Module):
 
         self.upsample_factor = int(np.prod(decoder_upsample_scales))
         self.spks = None
+        #Conditions on learned embedding
         if spks is not None and spks > 1:
             assert global_channels > 0
             self.spks = spks
             self.global_emb = torch.nn.Embedding(spks, global_channels)
         self.spk_embed_dim = None
+        #Conditioned on provided speaker embedding
         if spk_embed_dim is not None and spk_embed_dim > 0:
             assert global_channels > 0
             self.spk_embed_dim = spk_embed_dim
             self.spemb_proj = torch.nn.Linear(spk_embed_dim, global_channels)
         self.langs = None
+        #Conditioned on language embedding
         if langs is not None and langs > 1:
             assert global_channels > 0
             self.langs = langs

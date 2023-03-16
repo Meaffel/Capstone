@@ -154,6 +154,7 @@ class DilatedDepthSeparableConv(torch.nn.Module):
         for i in range(layers):
             dilation = kernel_size**i
             padding = (kernel_size * dilation - dilation) // 2
+            #Convolution neural network instantiated
             self.convs += [
                 torch.nn.Sequential(
                     torch.nn.Conv1d(
@@ -203,8 +204,10 @@ class DilatedDepthSeparableConv(torch.nn.Module):
             Tensor: Output tensor (B, channels, T).
 
         """
+        #Global conditioning applied
         if g is not None:
             x = x + g
+        # x processed by dilated convs
         for f in self.convs:
             y = f(x * x_mask)
             x = x + y
@@ -245,6 +248,7 @@ class ConvFlow(torch.nn.Module):
             hidden_channels,
             1,
         )
+        #Instantiated Dilated Conv
         self.dds_conv = DilatedDepthSeparableConv(
             hidden_channels,
             kernel_size,
@@ -293,6 +297,7 @@ class ConvFlow(torch.nn.Module):
         unnorm_widths = h[..., : self.bins] / denom
         unnorm_heights = h[..., self.bins : 2 * self.bins] / denom
         unnorm_derivatives = h[..., 2 * self.bins :]
+        #Applies piecewise_rational_quadratic_transform
         xb, logdet_abs = piecewise_rational_quadratic_transform(
             xb,
             unnorm_widths,

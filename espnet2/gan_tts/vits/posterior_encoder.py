@@ -60,6 +60,7 @@ class PosteriorEncoder(torch.nn.Module):
 
         # define modules
         self.input_conv = Conv1d(in_channels, hidden_channels, 1)
+        #Instantiates wavenet as encoder https://arxiv.org/pdf/1811.00002.pdf
         self.encoder = WaveNet(
             in_channels=-1,
             out_channels=-1,
@@ -108,6 +109,7 @@ class PosteriorEncoder(torch.nn.Module):
             )
         )
         x = self.input_conv(x) * x_mask
+        #x processed by wavenet
         x = self.encoder(x, x_mask, g=g)
         stats = self.proj(x) * x_mask
         m, logs = stats.split(stats.size(1) // 2, dim=1)

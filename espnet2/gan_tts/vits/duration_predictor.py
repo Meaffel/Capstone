@@ -56,6 +56,7 @@ class StochasticDurationPredictor(torch.nn.Module):
         super().__init__()
 
         self.pre = torch.nn.Conv1d(channels, channels, 1)
+        #Instantiate the Dilated Conv1D layers
         self.dds = DilatedDepthSeparableConv(
             channels,
             kernel_size,
@@ -67,6 +68,7 @@ class StochasticDurationPredictor(torch.nn.Module):
         self.log_flow = LogFlow()
         self.flows = torch.nn.ModuleList()
         self.flows += [ElementwiseAffineFlow(2)]
+        #Instantiate neural spline flows https://arxiv.org/pdf/1906.04032.pdf
         for i in range(flows):
             self.flows += [
                 ConvFlow(
@@ -79,6 +81,7 @@ class StochasticDurationPredictor(torch.nn.Module):
             self.flows += [FlipFlow()]
 
         self.post_pre = torch.nn.Conv1d(1, channels, 1)
+        #Instantiate the Post Dilated Conv1D layers
         self.post_dds = DilatedDepthSeparableConv(
             channels,
             kernel_size,
@@ -88,6 +91,7 @@ class StochasticDurationPredictor(torch.nn.Module):
         self.post_proj = torch.nn.Conv1d(channels, channels, 1)
         self.post_flows = torch.nn.ModuleList()
         self.post_flows += [ElementwiseAffineFlow(2)]
+        #Instantiate Post neural spline flows https://arxiv.org/pdf/1906.04032.pdf
         for i in range(flows):
             self.post_flows += [
                 ConvFlow(
@@ -98,7 +102,7 @@ class StochasticDurationPredictor(torch.nn.Module):
                 )
             ]
             self.post_flows += [FlipFlow()]
-
+        # Projection for global conditioning tensor (Speaker embedding)
         if global_channels > 0:
             self.global_conv = torch.nn.Conv1d(global_channels, channels, 1)
 
@@ -128,14 +132,17 @@ class StochasticDurationPredictor(torch.nn.Module):
         """
         x = x.detach()  # stop gradient
         x = self.pre(x)
+        #Apply global conditioning or speaker embedding to input
         if g is not None:
             x = x + self.global_conv(g.detach())  # stop gradient
         x = self.dds(x, x_mask)
         x = self.proj(x) * x_mask
 
+        #Conditioned on whether to inverse floew
         if not inverse:
             assert w is not None, "w must be provided."
             h_w = self.post_pre(w)
+            # Tensor processed by dilated 1D conv layers
             h_w = self.post_dds(h_w, x_mask)
             h_w = self.post_proj(h_w) * x_mask
             e_q = (
@@ -148,6 +155,7 @@ class StochasticDurationPredictor(torch.nn.Module):
             )
             z_q = e_q
             logdet_tot_q = 0.0
+            # Tensor processed by post flow layers
             for flow in self.post_flows:
                 z_q, logdet_q = flow(z_q, x_mask, g=(x + h_w))
                 logdet_tot_q += logdet_q
@@ -166,6 +174,7 @@ class StochasticDurationPredictor(torch.nn.Module):
             z0, logdet = self.log_flow(z0, x_mask)
             logdet_tot += logdet
             z = torch.cat([z0, z1], 1)
+            # Tensor processed by flow layers
             for flow in self.flows:
                 z, logdet = flow(z, x_mask, g=x, inverse=inverse)
                 logdet_tot = logdet_tot + logdet
@@ -185,6 +194,7 @@ class StochasticDurationPredictor(torch.nn.Module):
                 ).to(device=x.device, dtype=x.dtype)
                 * noise_scale
             )
+            # Tensor processed by flow layers
             for flow in flows:
                 z = flow(z, x_mask, g=x, inverse=inverse)
             z0, z1 = z.split(1, 1)

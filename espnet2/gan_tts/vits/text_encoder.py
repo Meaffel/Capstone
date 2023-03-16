@@ -79,6 +79,7 @@ class TextEncoder(torch.nn.Module):
         # define modules
         self.emb = torch.nn.Embedding(vocabs, attention_dim)
         torch.nn.init.normal_(self.emb.weight, 0.0, attention_dim**-0.5)
+        #Instantiate text encoder
         self.encoder = Encoder(
             idim=-1,
             input_layer=None,
@@ -99,6 +100,7 @@ class TextEncoder(torch.nn.Module):
             use_cnn_module=use_conformer_conv,
             cnn_module_kernel=conformer_kernel_size,
         )
+        #Instatiate projection
         self.proj = torch.nn.Conv1d(attention_dim, attention_dim * 2, 1)
 
     def forward(
@@ -119,7 +121,9 @@ class TextEncoder(torch.nn.Module):
             Tensor: Mask tensor for input tensor (B, 1, T_text).
 
         """
+        #Create embedding for input x
         x = self.emb(x) * math.sqrt(self.attention_dim)
+        #Create a mask
         x_mask = (
             make_non_pad_mask(x_lengths)
             .to(
@@ -134,6 +138,7 @@ class TextEncoder(torch.nn.Module):
 
         # convert the channel first (B, attention_dim, T_text)
         x = x.transpose(1, 2)
+        # Apply projection matrix with mask
         stats = self.proj(x) * x_mask
         m, logs = stats.split(stats.size(1) // 2, dim=1)
 

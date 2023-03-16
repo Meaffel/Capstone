@@ -72,6 +72,7 @@ class HiFiGANGenerator(torch.nn.Module):
         self.upsample_factor = int(np.prod(upsample_scales) * out_channels)
         self.num_upsamples = len(upsample_kernel_sizes)
         self.num_blocks = len(resblock_kernel_sizes)
+        #Instantiate input convolution neural network
         self.input_conv = torch.nn.Conv1d(
             in_channels,
             channels,
@@ -81,6 +82,7 @@ class HiFiGANGenerator(torch.nn.Module):
         )
         self.upsamples = torch.nn.ModuleList()
         self.blocks = torch.nn.ModuleList()
+        #Instansiate upsampling convolution neural network
         for i in range(len(upsample_kernel_sizes)):
             assert upsample_kernel_sizes[i] == 2 * upsample_scales[i]
             self.upsamples += [
@@ -98,6 +100,7 @@ class HiFiGANGenerator(torch.nn.Module):
                     ),
                 )
             ]
+            # Instantiate resisual blocks
             for j in range(len(resblock_kernel_sizes)):
                 self.blocks += [
                     ResidualBlock(
@@ -110,6 +113,7 @@ class HiFiGANGenerator(torch.nn.Module):
                         nonlinear_activation_params=nonlinear_activation_params,
                     )
                 ]
+        #Instantiate output convolution neural network
         self.output_conv = torch.nn.Sequential(
             # NOTE(kan-bayashi): follow official implementation but why
             #   using different slope parameter here? (0.1 vs. 0.01)
@@ -123,6 +127,7 @@ class HiFiGANGenerator(torch.nn.Module):
             ),
             torch.nn.Tanh(),
         )
+        #Instantiate global conditioning projection
         if global_channels > 0:
             self.global_conv = torch.nn.Conv1d(global_channels, channels, 1)
 
@@ -146,15 +151,19 @@ class HiFiGANGenerator(torch.nn.Module):
             Tensor: Output tensor (B, out_channels, T).
 
         """
+        #process c with input conv
         c = self.input_conv(c)
+        #Apply global conditioning
         if g is not None:
             c = c + self.global_conv(g)
+        #Process c with upsampling convolution layers
         for i in range(self.num_upsamples):
             c = self.upsamples[i](c)
             cs = 0.0  # initialize
             for j in range(self.num_blocks):
                 cs += self.blocks[i * self.num_blocks + j](c)
             c = cs / self.num_blocks
+        #Process c with output conv
         c = self.output_conv(c)
 
         return c
@@ -267,6 +276,7 @@ class HiFiGANPeriodDiscriminator(torch.nn.Module):
         self.convs = torch.nn.ModuleList()
         in_chs = in_channels
         out_chs = channels
+        #Instantiate downsampling convs
         for downsample_scale in downsample_scales:
             self.convs += [
                 torch.nn.Sequential(
@@ -285,6 +295,7 @@ class HiFiGANPeriodDiscriminator(torch.nn.Module):
             in_chs = out_chs
             # NOTE(kan-bayashi): Use downsample_scale + 1?
             out_chs = min(out_chs * 4, max_downsample_channels)
+        #Instantiate output conv
         self.output_conv = torch.nn.Conv2d(
             out_chs,
             out_channels,
@@ -316,6 +327,7 @@ class HiFiGANPeriodDiscriminator(torch.nn.Module):
         """
         # transform 1d to 2d -> (B, C, T/P, P)
         b, c, t = x.shape
+        #Calculate period
         if t % self.period != 0:
             n_pad = self.period - (t % self.period)
             x = F.pad(x, (0, n_pad), "reflect")
@@ -324,10 +336,13 @@ class HiFiGANPeriodDiscriminator(torch.nn.Module):
 
         # forward conv
         outs = []
+        #Process x with conv layers
         for layer in self.convs:
             x = layer(x)
             outs += [x]
+        #Process x with output conv
         x = self.output_conv(x)
+        #Flatten output from conv
         x = torch.flatten(x, 1, -1)
         outs += [x]
 
@@ -401,6 +416,7 @@ class HiFiGANMultiPeriodDiscriminator(torch.nn.Module):
 
         """
         outs = []
+        #Pass x through layers of discriminator
         for f in self.discriminators:
             outs += [f(x)]
 
@@ -475,6 +491,7 @@ class HiFiGANScaleDiscriminator(torch.nn.Module):
         out_chs = channels
         # NOTE(kan-bayashi): Remove hard coding?
         groups = 4
+        #Instantiate downsampling conv layers
         for downsample_scale in downsample_scales:
             self.layers += [
                 torch.nn.Sequential(
@@ -500,6 +517,7 @@ class HiFiGANScaleDiscriminator(torch.nn.Module):
 
         # add final layers
         out_chs = min(in_chs * 2, max_downsample_channels)
+        #Instantiate conv layers
         self.layers += [
             torch.nn.Sequential(
                 torch.nn.Conv1d(
@@ -647,6 +665,7 @@ class HiFiGANMultiScaleDiscriminator(torch.nn.Module):
 
         """
         outs = []
+        #Process x with discriminator layers
         for f in self.discriminators:
             outs += [f(x)]
             if self.pooling is not None:
@@ -716,6 +735,7 @@ class HiFiGANMultiScaleMultiPeriodDiscriminator(torch.nn.Module):
 
         """
         super().__init__()
+        #Instantiate MultiScale Discriminator
         self.msd = HiFiGANMultiScaleDiscriminator(
             scales=scales,
             downsample_pooling=scale_downsample_pooling,
@@ -723,6 +743,7 @@ class HiFiGANMultiScaleMultiPeriodDiscriminator(torch.nn.Module):
             discriminator_params=scale_discriminator_params,
             follow_official_norm=follow_official_norm,
         )
+        #Instantiate MultiPeriod Discriminator
         self.mpd = HiFiGANMultiPeriodDiscriminator(
             periods=periods,
             discriminator_params=period_discriminator_params,
@@ -740,6 +761,8 @@ class HiFiGANMultiScaleMultiPeriodDiscriminator(torch.nn.Module):
                 multi period ones are concatenated.
 
         """
+        #Generate output for each discriminator
         msd_outs = self.msd(x)
         mpd_outs = self.mpd(x)
+        #Sum output from discriminators
         return msd_outs + mpd_outs

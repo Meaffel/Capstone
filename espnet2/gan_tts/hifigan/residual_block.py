@@ -44,7 +44,9 @@ class ResidualBlock(torch.nn.Module):
         if use_additional_convs:
             self.convs2 = torch.nn.ModuleList()
         assert kernel_size % 2 == 1, "Kernel size must be odd number."
+        #Instantiate dilation conv layers
         for dilation in dilations:
+            #Instantiate first conv layer
             self.convs1 += [
                 torch.nn.Sequential(
                     getattr(torch.nn, nonlinear_activation)(
@@ -62,6 +64,7 @@ class ResidualBlock(torch.nn.Module):
                 )
             ]
             if use_additional_convs:
+                #Instantiate additional conv layers
                 self.convs2 += [
                     torch.nn.Sequential(
                         getattr(torch.nn, nonlinear_activation)(
@@ -90,8 +93,10 @@ class ResidualBlock(torch.nn.Module):
 
         """
         for idx in range(len(self.convs1)):
+            #Process x with first conv layer
             xt = self.convs1[idx](x)
             if self.use_additional_convs:
+                #Process x with second conv layer 
                 xt = self.convs2[idx](xt)
             x = xt + x
         return x

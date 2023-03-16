@@ -56,6 +56,7 @@ class GeneratorAdversarialLoss(torch.nn.Module):
         """
         if isinstance(outputs, (tuple, list)):
             adv_loss = 0.0
+            #Calculate loss for each output
             for i, outputs_ in enumerate(outputs):
                 if isinstance(outputs_, (tuple, list)):
                     # NOTE(kan-bayashi): case including feature maps
@@ -64,14 +65,17 @@ class GeneratorAdversarialLoss(torch.nn.Module):
             if self.average_by_discriminators:
                 adv_loss /= i + 1
         else:
+            #Calculate adversarial loss
             adv_loss = self.criterion(outputs)
 
         return adv_loss
 
     def _mse_loss(self, x):
+        #Calculate mse loss
         return F.mse_loss(x, x.new_ones(x.size()))
 
     def _hinge_loss(self, x):
+        #Calculate hinge loss
         return -x.mean()
 
 
@@ -141,15 +145,19 @@ class DiscriminatorAdversarialLoss(torch.nn.Module):
         return real_loss, fake_loss
 
     def _mse_real_loss(self, x: torch.Tensor) -> torch.Tensor:
+        #Calculate mse loss with real data
         return F.mse_loss(x, x.new_ones(x.size()))
 
     def _mse_fake_loss(self, x: torch.Tensor) -> torch.Tensor:
+        #Calculate mse loss with fake data
         return F.mse_loss(x, x.new_zeros(x.size()))
 
     def _hinge_real_loss(self, x: torch.Tensor) -> torch.Tensor:
+        #Calculate hinge loss with real data
         return -torch.mean(torch.min(x - 1, x.new_zeros(x.size())))
 
     def _hinge_fake_loss(self, x: torch.Tensor) -> torch.Tensor:
+        #Calculate hinge loss with fake data
         return -torch.mean(torch.min(-x - 1, x.new_zeros(x.size())))
 
 
@@ -198,17 +206,20 @@ class FeatureMatchLoss(torch.nn.Module):
 
         """
         feat_match_loss = 0.0
+        #Iterate over features in zip
         for i, (feats_hat_, feats_) in enumerate(zip(feats_hat, feats)):
             feat_match_loss_ = 0.0
             if not self.include_final_outputs:
                 feats_hat_ = feats_hat_[:-1]
                 feats_ = feats_[:-1]
             for j, (feat_hat_, feat_) in enumerate(zip(feats_hat_, feats_)):
+                #Calculate feature match loss
                 feat_match_loss_ += F.l1_loss(feat_hat_, feat_.detach())
             if self.average_by_layers:
                 feat_match_loss_ /= j + 1
             feat_match_loss += feat_match_loss_
         if self.average_by_discriminators:
+            #Average feature match loss
             feat_match_loss /= i + 1
 
         return feat_match_loss
@@ -283,11 +294,14 @@ class MelSpectrogramLoss(torch.nn.Module):
             Tensor: Mel-spectrogram loss value.
 
         """
+        #Convert predicted y to mel
         mel_hat, _ = self.wav_to_mel(y_hat.squeeze(1))
+        #Convert tru y to mel
         if spec is None:
             mel, _ = self.wav_to_mel(y.squeeze(1))
         else:
             mel, _ = self.wav_to_mel.logmel(spec)
+        #Calculate mel spectrogram loss
         mel_loss = F.l1_loss(mel_hat, mel)
 
         return mel_loss

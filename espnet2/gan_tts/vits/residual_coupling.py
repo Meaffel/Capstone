@@ -61,6 +61,7 @@ class ResidualAffineCouplingBlock(torch.nn.Module):
         super().__init__()
 
         self.flows = torch.nn.ModuleList()
+        # Instantiate affine coupling layers https://arxiv.org/pdf/1605.08803.pdf
         for i in range(flows):
             self.flows += [
                 ResidualAffineCouplingLayer(
@@ -98,10 +99,13 @@ class ResidualAffineCouplingBlock(torch.nn.Module):
             Tensor: Output tensor (B, in_channels, T).
 
         """
+        #Determines whether to inverse flows
         if not inverse:
+            #Processes x with without inverse affine coupling flows
             for flow in self.flows:
                 x, _ = flow(x, x_mask, g=g, inverse=inverse)
         else:
+            #Processes x with with inverse affine coupling flows
             for flow in reversed(self.flows):
                 x = flow(x, x_mask, g=g, inverse=inverse)
         return x
@@ -151,6 +155,7 @@ class ResidualAffineCouplingLayer(torch.nn.Module):
             hidden_channels,
             1,
         )
+        #Instantiates wavenet as encoder https://arxiv.org/pdf/1811.00002.pdf
         self.encoder = WaveNet(
             in_channels=-1,
             out_channels=-1,
@@ -208,6 +213,7 @@ class ResidualAffineCouplingLayer(torch.nn.Module):
         """
         xa, xb = x.split(x.size(1) // 2, dim=1)
         h = self.input_conv(xa) * x_mask
+        # Process x with encoder
         h = self.encoder(h, x_mask, g=g)
         stats = self.proj(h) * x_mask
         if not self.use_only_mean:
@@ -215,7 +221,7 @@ class ResidualAffineCouplingLayer(torch.nn.Module):
         else:
             m = stats
             logs = torch.zeros_like(m)
-
+        #Conditioned on whether to inverse the flow or not
         if not inverse:
             xb = m + xb * torch.exp(logs) * x_mask
             x = torch.cat([xa, xb], 1)

@@ -116,6 +116,7 @@ class VITS(AbsGANTTS):
         },
         # discriminator related
         discriminator_type: str = "hifigan_multi_scale_multi_period_discriminator",
+        #discriminator params
         discriminator_params: Dict[str, Any] = {
             "scales": 1,
             "scale_downsample_pooling": "AvgPool1d",
@@ -155,19 +156,23 @@ class VITS(AbsGANTTS):
             },
         },
         # loss related
+        #generator adversarial loss
         generator_adv_loss_params: Dict[str, Any] = {
             "average_by_discriminators": False,
             "loss_type": "mse",
         },
+        #discriminator adversarial loss
         discriminator_adv_loss_params: Dict[str, Any] = {
             "average_by_discriminators": False,
             "loss_type": "mse",
         },
+        #feature match loss
         feat_match_loss_params: Dict[str, Any] = {
             "average_by_discriminators": False,
             "average_by_layers": False,
             "include_final_outputs": True,
         },
+        #mel loss
         mel_loss_params: Dict[str, Any] = {
             "fs": 22050,
             "n_fft": 1024,
@@ -231,18 +236,23 @@ class VITS(AbsGANTTS):
         self.discriminator = discriminator_class(
             **discriminator_params,
         )
+        #Instantiate Generator adversarial loss
         self.generator_adv_loss = GeneratorAdversarialLoss(
             **generator_adv_loss_params,
         )
+        #Instantiate Discriminator adversarial loss
         self.discriminator_adv_loss = DiscriminatorAdversarialLoss(
             **discriminator_adv_loss_params,
         )
+        #Instantiate feature match loss
         self.feat_match_loss = FeatureMatchLoss(
             **feat_match_loss_params,
         )
+        #Instantiate mel spectrogram loss
         self.mel_loss = MelSpectrogramLoss(
             **mel_loss_params,
         )
+        #Instantiate KL divergence loss
         self.kl_loss = KLDivergenceLoss()
 
         # coefficients
@@ -311,6 +321,7 @@ class VITS(AbsGANTTS):
 
         """
         if forward_generator:
+            #Forward pass for generator
             return self._forward_generator(
                 text=text,
                 text_lengths=text_lengths,
@@ -323,6 +334,7 @@ class VITS(AbsGANTTS):
                 lids=lids,
             )
         else:
+            #Forward pass for discriminator
             return self._forward_discrminator(
                 text=text,
                 text_lengths=text_lengths,
@@ -416,13 +428,15 @@ class VITS(AbsGANTTS):
             adv_loss = self.generator_adv_loss(p_hat)
             feat_match_loss = self.feat_match_loss(p_hat, p)
 
+            # Losses scales by coefficients
             mel_loss = mel_loss * self.lambda_mel
             kl_loss = kl_loss * self.lambda_kl
             dur_loss = dur_loss * self.lambda_dur
             adv_loss = adv_loss * self.lambda_adv
             feat_match_loss = feat_match_loss * self.lambda_feat_match
+            # Calculates final loss as sum of losses
             loss = mel_loss + kl_loss + dur_loss + adv_loss + feat_match_loss
-
+        #Instantiates stat dictionary
         stats = dict(
             generator_loss=loss.item(),
             generator_mel_loss=mel_loss.item(),
@@ -588,7 +602,7 @@ class VITS(AbsGANTTS):
         if durations is not None:
             durations = durations.view(1, 1, -1)
 
-        # inference
+        # Conditions inference with teacher forcing or not
         if use_teacher_forcing:
             assert feats is not None
             feats = feats[None].transpose(1, 2)
@@ -597,6 +611,7 @@ class VITS(AbsGANTTS):
                 dtype=torch.long,
                 device=feats.device,
             )
+            #Inference with teacher forcing
             wav, att_w, dur = self.generator.inference(
                 text=text,
                 text_lengths=text_lengths,
@@ -609,6 +624,7 @@ class VITS(AbsGANTTS):
                 use_teacher_forcing=use_teacher_forcing,
             )
         else:
+            #Inference without teacher forcing
             wav, att_w, dur = self.generator.inference(
                 text=text,
                 text_lengths=text_lengths,
