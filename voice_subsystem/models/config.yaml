@@ -94,8 +94,8 @@ tokenizer:
   g2p_type: g2p_en_no_space
   token_type: phn
 tts_model:
-  model_path: /nfs/stak/users/raffelm/hpc-share/capstone/testing/models/onnx/vits.onnx
+  model_path: /home/raffelm/capstone/Capstone/voice_subsystem/models/onnx/vits.onnx
   model_type: VITS
-  quantized_model_path: /nfs/stak/users/raffelm/hpc-share/capstone/testing/models/quantize/vits.onnx
+  quantized_model_path: /home/raffelm/capstone/Capstone/voice_subsystem/models/quantize/vits.onnx
 vocoder:
   vocoder_type: not_used

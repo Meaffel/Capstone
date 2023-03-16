@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 import subprocess
 from pathlib import Path
 from guiIO import *
@@ -6,8 +7,8 @@ from guiIO import *
 END = tk.END
 
 def update():    
-    inputWav = Path('./voiceInput.wav')
-    outputWav = Path('./voiceOutput.wav')
+    inputWav = Path('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceInput.wav')
+    outputWav = Path('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceOutput.wav')
     
     if inputWav.is_file():
         inputReady['text'] = "READY"
@@ -22,18 +23,16 @@ def update():
     root.after(250, update)
     
 def submitButton():
-    textFile = open("outText.txt", "w")
-    textFile.write(textbox.get(1.0, END))
-    textFile.close()
-    p = subprocess.Popen([sys.executable, './examplechild.py', "/home/jetson/Desktop/voiceInput.wav", "/home/jetson/Desktop/outtext.txt", "arg3"],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT)
+    os.remove('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceOutput.wav')
+    p = subprocess.Popen([sys.executable, './generate_clone.py', textbox.get(1.0, END)])#,
+                      #stdout=subprocess.PIPE,
+                      #stderr=subprocess.STDOUT)
 
 def recordButton():
-    record_audio(7)
+    record_audio(12)
 
 def playButton():
-    play_audio()
+    play_audio2()
 
 def helpButton():
     help = tk.Toplevel()

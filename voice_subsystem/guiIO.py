@@ -6,6 +6,8 @@ import subprocess
 import pyaudio
 import wave
 
+from playsound import playsound
+
 
 
 #Spawning child -----------------------------------------------------
@@ -47,7 +49,7 @@ def record_audio(time_sec):
     RATE = 44100
     CHUNK = 512
     RECORD_SECONDS = time_sec
-    WAVE_OUTPUT_FILENAME = "voiceInput.wav"
+    WAVE_OUTPUT_FILENAME = '/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceInput.wav'
     device_index = 2
     audio = pyaudio.PyAudio()
 
@@ -60,12 +62,17 @@ def record_audio(time_sec):
 
     print("Enter device to record with: ")
 
-    device_index = int(input())
-    print("Starting recording on device: "+str(device_index))
+    index = int(input())
+    print("Starting recording on device: "+str(index))
+    
+    RATE = int(audio.get_device_info_by_index(index).get('defaultSampleRate'))
+    
+    print("Sample rate: " + str(RATE))
 
     stream = audio.open(format=FORMAT, channels=CHANNELS,
-                    rate=RATE, input=True,input_device_index = device_index,
+                    rate=RATE, input=True,input_device_index = index,
                     frames_per_buffer=CHUNK)
+
     print ("recording started: recording for "+str(RECORD_SECONDS)+" seconds")
     Recordframes = []
  
@@ -92,8 +99,8 @@ def record_audio(time_sec):
 def play_audio():
     chunk = 512
     #open a wav format music  
-    wav = wave.open(r"./cannery.wav","rb")  
-    #wav = wave.open(r"./voiceInput.wav","rb")  
+    #wav = wave.open(r"./cannery.wav","rb")  
+    wav = wave.open(r"./source.wav","rb")  
     #instantiate PyAudio
     audio = pyaudio.PyAudio()  
     #open stream  
@@ -115,3 +122,6 @@ def play_audio():
 
     #close PyAudio  
     audio.terminate()
+    
+def play_audio2():
+    playsound('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceOutput.wav')

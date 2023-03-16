@@ -10,8 +10,7 @@ import kaldiio
 import numpy as np
 import torch
 
-# TODO(nelson): The model inference can be moved into functon.
-inputs = {"wav": "/nfs/stak/users/raffelm/hpc-share/capstone/testing/source.wav", "save_dir": "/nfs/stak/users/raffelm/hpc-share/capstone/testing/xvector/"}
+inputs = {"wav": "/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceInput.wav", "save_dir": "/home/raffelm/capstone/Capstone/voice_subsystem/xvector/"}
 
 device = 'cpu'
 classifier = EncoderClassifier.from_hparams(
