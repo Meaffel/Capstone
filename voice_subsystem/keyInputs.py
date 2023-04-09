@@ -14,6 +14,8 @@ spi.max_speed_hz = 1000
 
 waitTime = 1000000000 #(ns)
 
+timer = 0
+
 spinput = []
 
 keyTimes = [0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -52,6 +54,8 @@ def keyPress(i):
 
     prevKeyS[i] = 1
     
+    print(str((time.time_ns()-timer)/1000))
+    
     prevTime = keyTimes[i]
     keyTimes[i] = time.time_ns()
 
@@ -82,6 +86,8 @@ while (not keyboard.is_pressed('1')):
     GPIO.output(pload, GPIO.LOW)
     GPIO.output(pload, GPIO.HIGH)
     spinput = spi.readbytes(2)
+
+    timer = time.time_ns()
 
     i = 0
     while (i < 9):
