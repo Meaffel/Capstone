@@ -31,15 +31,25 @@ keyCodes = [[0,64],
             [0,32],
             [0,4]]
 
-keyChars = [['a', 'b', 'c'],
-            ['d', 'e', 'f'],
-            ['g', 'h', 'i'],
+#keyChars = [['a', 'b', 'c'],
+#            ['d', 'e', 'f'],
+#            ['g', 'h', 'i'],
+#            ['j', 'k', 'l'],
+#            ['m', 'n', 'o'],
+#            ['p', 'q', 'r'],
+#            ['s', 't', 'u', 'v'],
+#            ['w', 'x', 'y', 'z'],
+#            ['space', '/b']]
+
+keyChars = [['s', 't', 'u', 'v'],
             ['j', 'k', 'l'],
+            ['a', 'b', 'c'],
+            ['w', 'x', 'y', 'z'],
             ['m', 'n', 'o'],
+            ['d', 'e', 'f'],
+            ['space', '\b'],
             ['p', 'q', 'r'],
-            ['s', 't', 'u'],
-            ['v', 'w', 'x'],
-            ['y', 'z', 'space']]
+            ['g', 'h', 'i']]
 
 def clearTimes(i):
     j = 0
@@ -54,8 +64,6 @@ def keyPress(i):
 
     prevKeyS[i] = 1
     
-    print(str((time.time_ns()-timer)/1000))
-    
     prevTime = keyTimes[i]
     keyTimes[i] = time.time_ns()
 
@@ -64,23 +72,19 @@ def keyPress(i):
         keyState[i] = 1
         return()
     
-    if (keyState[i] == 0):
-        keyboard.send('\b')
-        keyboard.send(keyChars[i][0])
-        keyState[i] = 1
-        return()
+    k = len(keyChars[i])
     
-    if (keyState[i] == 1):
-        keyboard.send('\b')
-        keyboard.send(keyChars[i][1])
-        keyState[i] = 2
-        return()
-    
-    if (keyState[i] == 2):
-        keyboard.send('\b')
-        keyboard.send(keyChars[i][2])
-        keyState[i] = 0
-        return()
+    for j in range (0, k):
+        if (keyState[i] == j):
+            if (keyChars[i][j] != 'space'):
+                keyboard.send('\b')
+            keyboard.send(keyChars[i][j])
+            if (keyState[i] == k-1):
+                keyState[i] = 0
+            else:
+                keyState[i] = keyState[i]+1
+            return()
+
 
 while (not keyboard.is_pressed('1')):
     GPIO.output(pload, GPIO.LOW)
