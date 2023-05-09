@@ -17,8 +17,8 @@ token:
   - DH
   - M
   - K
-  - Z
   - EH1
+  - Z
   - AE1
   - IH0
   - AH1
@@ -26,12 +26,12 @@ token:
   - ','
   - HH
   - ER0
-  - P
   - IY1
   - V
+  - P
   - F
-  - B
   - UW1
+  - B
   - AA1
   - AY1
   - AO1
@@ -52,8 +52,8 @@ token:
   - ''''
   - '?'
   - OW0
-  - EH2
   - '!'
+  - EH2
   - IH2
   - OY1
   - EY2
@@ -63,21 +63,21 @@ token:
   - AA2
   - AE2
   - OW2
+  - AH2
   - AO2
   - AE0
-  - AH2
   - ZH
   - AA0
   - UW2
+  - AO0
   - IY2
   - AY0
-  - AO0
   - AW2
   - EY0
   - UH2
-  - ER2
-  - AW0
   - '...'
+  - AW0
+  - ER2
   - UH0
   - OY2
   - . . .
@@ -86,15 +86,19 @@ token:
   - ..
   - . ...
   - . .
-  - . . . . .
+  - . . . . . . .
+  - . . . . . .
+  - . . . . . . . .
   - .. ..
+  - . . . . .
   - '... .'
+  - . . . . . . . . .
   - <sos/eos>
 tokenizer:
   g2p_type: g2p_en_no_space
   token_type: phn
 tts_model:
-  model_path: /home/raffelm/capstone/Capstone/voice_subsystem/models/onnx/vits.onnx
+  model_path: /nfs/stak/users/raffelm/hpc-share/capstone/Capstone/voice_subsystem/models/onnx/vits.onnx
   model_type: VITS
   quantized_model_path: /home/raffelm/capstone/Capstone/voice_subsystem/models/quantize/vits.onnx
 vocoder:
