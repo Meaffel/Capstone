@@ -51,7 +51,7 @@ class GUI(tk.Tk):
 
         self.geometry("800x480")
         self.title("Voice cloning")
-        self.attributes("-fullscreen", False)
+        self.attributes("-fullscreen", True)
 
         self.inputWav = Path('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceInput.wav')
         self.outputWav = Path('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceOutput.wav')
@@ -91,9 +91,9 @@ class GUI(tk.Tk):
         recordTime['text'] = str(count)
         
         if count == 0:
-            self.recording.destroy()
+            recording.destroy()
         else:
-            self.recording.after(1000, delayDestroy, recording, recordTime, count-1)
+            recording.after(1000, self.delayDestroy, recording, recordTime, count-1)
 
 
     def recordButton(self):
@@ -102,7 +102,7 @@ class GUI(tk.Tk):
         recordLabel = tk.Label(recording, text="Recording Time:", font=('Arial', 12, "bold"))
         recordLabel.grid(row=0, column=1, sticky=tk.W, padx=0, pady=2)
 
-        recordTime = tk.Label(recording, text="12", font=('Arial', 12, "bold"))
+        recordTime = tk.Label(recording, text="15", font=('Arial', 12, "bold"))
         recordTime.grid(row=0, column=2, sticky=tk.W, padx=0, pady=2)
         
         k1 = tk.Button(recording, text="Try reading one of the example sentences below:", font=('Arial', 18, "bold"), width=50, height=2)
@@ -121,7 +121,7 @@ class GUI(tk.Tk):
         recording.title("recording Window")
         recording.attributes("-fullscreen", True)
         
-        record_audio(15)
+        p = subprocess.Popen([sys.executable, './record.py')
         
         self.delayDestroy(recording, recordTime, 15)
 
@@ -131,42 +131,42 @@ class GUI(tk.Tk):
         
         
     def clearBox(self, window):
-        self.textbox.delete('1.0', END)
+        self.textbox.delete('1.0', tk.END)
         window.destroy()
         
     def preset1(self, preset):
-        self.textbox.delete('1.0', END)
+        self.textbox.delete('1.0', tk.END)
         self.textbox.insert('1.0', "The quick brown fox jumps over the lazy dog")
         preset.destroy()
         
     def preset2(self, preset):
-        self.textbox.delete('1.0', END)
+        self.textbox.delete('1.0', tk.END)
         self.textbox.insert('1.0', "The quick brown fox jumps over the lazy dog")
         preset.destroy()
         
     def preset3(self, preset):
-        self.textbox.delete('1.0', END)
+        self.textbox.delete('1.0', tk.END)
         self.textbox.insert('1.0', "The quick brown fox jumps over the lazy dog")
         preset.destroy()
         
     def preset4(self, preset):
-        self.textbox.delete('1.0', END)
+        self.textbox.delete('1.0', tk.END)
         self.textbox.insert('1.0', "According to all known laws of aviation there is no way a bee should be able to fly")
         preset.destroy()
 
     def presetButton(self):
         preset = tk.Toplevel()
         
-        k1 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: preset1(preset))
+        k1 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset1(preset))
         k1.grid(row=1, column=0, columnspan=21, padx=20, pady=12)
         
-        k2 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: preset2(preset))
+        k2 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset2(preset))
         k2.grid(row=2, column=0, columnspan=21, padx=20, pady=12)
         
-        k3 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: preset3(preset))
+        k3 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset3(preset))
         k3.grid(row=3, column=0, columnspan=21, padx=20, pady=12)
         
-        k4 = tk.Button(preset, text="According to all known laws of aviation\n there is no way a bee should be able to fly", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: preset4(preset))
+        k4 = tk.Button(preset, text="According to all known laws of aviation\n there is no way a bee should be able to fly", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset4(preset))
         k4.grid(row=4, column=0, columnspan=21, padx=20, pady=12)
         
         bClose = tk.Button(preset, text="X", font=('Arial', 8, "bold"), command=preset.destroy, width=3, height=1)
