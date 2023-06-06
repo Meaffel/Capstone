@@ -14,7 +14,7 @@ import sys
 
 import kaldiio
 import numpy as np
-import torch
+from TTS.api import TTS
 
 class TTSmodel():
     def __init__(self, input_wav_path, output_wav_path):
@@ -65,7 +65,24 @@ class TTSmodel():
 
         self.generate_wav(text)
 
+class PreTTSmodel():
+    def __init__(self, voice, output_wav_path):
+        self.output_wav_path = output_wav_path
+        if voice == "Trump":
+            self.TTS_model = TTS(model_path="pretrained_models/trump.pth", config_path= "pretrained_models/config.json")
+        elif voice == "Obiwan":
+            self.TTS_model = TTS(model_path="pretrained_models/obiwan.pth", config_path= "pretrained_models/config.json")
+        elif voice == "David":
+            self.TTS_model = TTS(model_path="pretrained_models/david.pth", config_path= "pretrained_models/config.json")
 
+        self.rtf = None
+
+    def run(self, text, gen_embed=False):
+        self.TTS_model.tts_to_file(text=text, file_path=self.output_wav_path)
+
+
+    def get_rtf(self):
+        return self.rtf
 
 
 
