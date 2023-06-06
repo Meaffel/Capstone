@@ -56,8 +56,8 @@ class GUI(tk.Tk):
         self.title("Voice cloning")
         self.attributes("-fullscreen", False)
 
-        self.inputWav = Path('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceInput.wav')
-        self.outputWav = Path('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceOutput.wav')
+        self.inputWav = Path('/home/raffelm/Capstone/voice_subsystem/wav/voiceInput.wav')
+        self.outputWav = Path('/home/raffelm/Capstone/voice_subsystem/wav/voiceOutput.wav')
 
         self.speaker_mode = "Personal"
         self.tts_model = TTSmodel(str(self.inputWav), str(self.outputWav))
@@ -92,7 +92,7 @@ class GUI(tk.Tk):
 
     def submitButton(self):
         if self.outputWav.is_file():
-            os.remove('/home/raffelm/capstone/Capstone/voice_subsystem/wav/voiceOutput.wav')
+            os.remove('/home/raffelm/Capstone/voice_subsystem/wav/voiceOutput.wav')
 
         if self.inputWav.is_file():
             if(self.model_thread is None or not self.model_thread.is_alive()):
@@ -140,7 +140,7 @@ class GUI(tk.Tk):
 
         choice.geometry("800x480")
         choice.title("Voice Select Window")
-        choice.attributes("-fullscreen", False)
+        choice.attributes("-fullscreen", True)
 
 
     def recordButton(self, choice_button):
@@ -171,7 +171,7 @@ class GUI(tk.Tk):
 
         recording.geometry("800x480")
         recording.title("Recording Window")
-        recording.attributes("-fullscreen", False)
+        recording.attributes("-fullscreen", True)
 
         p = subprocess.Popen([sys.executable, './record.py'])
 
@@ -277,7 +277,7 @@ class GUI(tk.Tk):
 
         help.geometry("800x480")
         help.title("Help Window")
-        help.attributes("-fullscreen", False)
+        help.attributes("-fullscreen", True)
 
 gui = GUI()
 gui.mainloop()

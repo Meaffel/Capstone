@@ -21,7 +21,7 @@ class TTSmodel():
         self.embed_model = EncoderClassifier.from_hparams(
                 source="speechbrain/spkrec-ecapa-voxceleb", run_opts={"device": 'cpu'}
                 )
-        self.TTS_model = Text2Speech(model_dir="/home/raffelm/capstone/Capstone/voice_subsystem/models/", use_quantized=False)
+        self.TTS_model = Text2Speech(model_dir="/home/raffelm/Capstone/voice_subsystem/models/", use_quantized=False)
         self.audio_norm = AudioNormalizer()
         self.fs = 16000
         self.input_wav_path = input_wav_path
