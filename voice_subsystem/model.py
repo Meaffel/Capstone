@@ -11,7 +11,7 @@ import numpy as np
 from speechbrain.dataio.preprocess import AudioNormalizer
 from speechbrain.pretrained import EncoderClassifier
 import sys
-
+from IPython.display import Audio
 import kaldiio
 import numpy as np
 from TTS.api import TTS
@@ -21,7 +21,7 @@ class TTSmodel():
         self.embed_model = EncoderClassifier.from_hparams(
                 source="speechbrain/spkrec-ecapa-voxceleb", run_opts={"device": 'cpu'}
                 )
-        self.TTS_model = Text2Speech(model_dir="/home/raffelm/Capstone/voice_subsystem/models/", use_quantized=False)
+        self.TTS_model = Text2Speech(model_dir="models/", use_quantized=False)
         self.audio_norm = AudioNormalizer()
         self.fs = 16000
         self.input_wav_path = input_wav_path
@@ -33,14 +33,12 @@ class TTSmodel():
 
     def generate_embed(self):
         in_sr, wav = kaldiio.load_mat(self.input_wav_path)
-
         if self.fs is not None and self.fs != in_sr:
             wav = resampy.resample(
                     wav.astype(np.float64), in_sr, self.fs, axis=0
                     )
             wav = wav.astype(np.int16)
             in_sr = self.fs
-
         amax = np.amax(np.absolute(wav))
         wav = wav.astype(np.float32) / amax
         # Freq Norm
@@ -48,16 +46,15 @@ class TTSmodel():
         # X-vector Embedding
         self.spembs = self.embed_model.encode_batch(wav).detach().cpu().numpy()[0][0]
 
-
     def generate_wav(self, text):
+        if text == '\n':
+            text = "Failure.  You did not provide any text."
         start = time.time()
         output_dict = self.TTS_model(text, spembs=self.spembs)
         self.rtf = round((time.time() - start) / (len(output_dict["wav"]) / self.fs), 3)
-
-        from IPython.display import Audio
         audio = Audio(output_dict["wav"], rate=self.fs)
-        with open(self.output_wav_path + 'voiceOutput.wav', 'wb') as f:
-            f.write(audio.data)
+        with open(self.output_wav_path, 'wb') as f:
+            f.write(audio.data)  
 
     def run(self, text, gen_embed):
         if gen_embed:
@@ -78,6 +75,8 @@ class PreTTSmodel():
         self.rtf = None
 
     def run(self, text, gen_embed=False):
+        if text == '\n':
+            text = "Failure.  You did not provide any text."
         self.TTS_model.tts_to_file(text=text, file_path=self.output_wav_path)
 
 

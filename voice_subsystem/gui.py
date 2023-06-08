@@ -3,8 +3,11 @@ from tkinter import ttk
 import os
 import threading
 from pathlib import Path
-from guiIO import *
 from model import TTSmodel, PreTTSmodel
+from playsound import playsound
+import subprocess
+import sys
+
 
 class GUI(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -28,9 +31,7 @@ class GUI(tk.Tk):
 
         #self.rtfReady = tk.Label(self, text="None", font=('Arial', 12, "bold"))
         #self.rtfReady.grid(row=0, column=5, sticky=tk.W, padx=0, pady=2)
-        #self.progress_bar = ttk.Progressbar(self, mode='indeterminate')
-        #self.progress_bar.grid(row=0, column=5, sticky=tk.W, padx=0, pady=2)
-
+        
 
         self.textbox = tk.Text(self, font=('Arial', 24), wrap=tk.WORD, width=32, height=12)
         self.textbox.grid(row=1, column=0, rowspan=5, columnspan=6, padx=10, pady=2)
@@ -56,15 +57,14 @@ class GUI(tk.Tk):
         self.title("Voice cloning")
         self.attributes("-fullscreen", False)
 
-        self.inputWav = Path('/home/raffelm/Capstone/voice_subsystem/wav/voiceInput.wav')
-        self.outputWav = Path('/home/raffelm/Capstone/voice_subsystem/wav/voiceOutput.wav')
+        self.inputWav = Path('wav/voiceInput.wav')
+        self.outputWav = Path('wav/voiceOutput.wav')
 
         self.speaker_mode = "Personal"
         self.tts_model = TTSmodel(str(self.inputWav), str(self.outputWav))
 
         self.model_thread = None
-        self.is_new_speaker = False
-        #self.progress_thread = None
+        self.is_new_speaker = True
 
         self.update()
 
@@ -79,9 +79,6 @@ class GUI(tk.Tk):
             self.outputReady['text'] = "READY"
             if self.model_thread is not None:
                 self.model_thread.join()
-            #if self.progress_thread is not None:
-                #self.progress_bar.stop()
-                #self.progress_thread.join()
         else:
             self.outputReady['text'] = "NOT READY"
 
@@ -92,15 +89,13 @@ class GUI(tk.Tk):
 
     def submitButton(self):
         if self.outputWav.is_file():
-            os.remove('/home/raffelm/Capstone/voice_subsystem/wav/voiceOutput.wav')
+            os.remove('wav/voiceOutput.wav')
 
         if self.inputWav.is_file():
             if(self.model_thread is None or not self.model_thread.is_alive()):
                 self.model_thread = threading.Thread(target=self.tts_model.run, args=(self.textbox.get(1.0, tk.END),self.is_new_speaker))
                 self.model_thread.start()
                 self.is_new_speaker = False
-                #self.progress_thread = threading.Thread(target=self.progress_bar.start)
-                #self.progress_thread.start()
 
 
     def delayDestroy(self, recording, recordTime, count):
@@ -154,7 +149,7 @@ class GUI(tk.Tk):
         recordLabel = tk.Label(recording, text="Recording Time:", font=('Arial', 12, "bold"))
         recordLabel.grid(row=0, column=1, sticky=tk.W, padx=0, pady=2)
 
-        recordTime = tk.Label(recording, text="15", font=('Arial', 12, "bold"))
+        recordTime = tk.Label(recording, text="10", font=('Arial', 12, "bold"))
         recordTime.grid(row=0, column=2, sticky=tk.W, padx=0, pady=2)
 
         k1 = tk.Button(recording, text="Try reading one of the example sentences below:", font=('Arial', 18, "bold"), width=56, height=2)
@@ -180,8 +175,7 @@ class GUI(tk.Tk):
 
 
     def playButton(self):
-        play_audio2()
-
+        playsound('wav/voiceOutput.wav')
 
     def clearBox(self, window):
         self.textbox.delete('1.0', tk.END)
@@ -189,12 +183,12 @@ class GUI(tk.Tk):
 
     def preset1(self, preset):
         self.textbox.delete('1.0', tk.END)
-        self.textbox.insert('1.0', "The quick brown fox jumps over the lazy dog")
+        self.textbox.insert('1.0', "Hello World.")
         preset.destroy()
 
     def preset2(self, preset):
         self.textbox.delete('1.0', tk.END)
-        self.textbox.insert('1.0', "The quick brown fox jumps over the lazy dog")
+        self.textbox.insert('1.0', "A pleasure to meet you.")
         preset.destroy()
 
     def preset3(self, preset):
@@ -210,10 +204,10 @@ class GUI(tk.Tk):
     def presetButton(self):
         preset = tk.Toplevel()
 
-        k1 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset1(preset))
+        k1 = tk.Button(preset, text="Hello World.", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset1(preset))
         k1.grid(row=1, column=0, columnspan=21, padx=20, pady=12)
 
-        k2 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset2(preset))
+        k2 = tk.Button(preset, text="A pleasure to meet you.", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset2(preset))
         k2.grid(row=2, column=0, columnspan=21, padx=20, pady=12)
 
         k3 = tk.Button(preset, text="The quick brown fox jumps over the lazy dog", font=('Arial', 18, "bold"), width=50, height=2, command=lambda: self.preset3(preset))

@@ -98,7 +98,7 @@ tokenizer:
   g2p_type: g2p_en_no_space
   token_type: phn
 tts_model:
-  model_path: //home/raffelm/Capstone/voice_subsystem/models/onnx/vits.onnx
+  model_path: /home/raffelm/Capstone/voice_subsystem/models/onnx/vits.onnx
   model_type: VITS
 vocoder:
   vocoder_type: not_used
